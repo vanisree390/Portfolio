@@ -29,8 +29,24 @@ function Home() {
         }
     };
 
-    useEffect(() => fetchProjects(), []);
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const res = await fetch("http://localhost:8080/api/projects");
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const data = await res.json();
+                setProjects(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error("Failed to fetch projects:", err);
+                setError(err.message);
+                setProjects([]);
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchProjects();
+    }, []);
     const addProject = async () => {
         if (!name || !description) return;
         try {

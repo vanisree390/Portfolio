@@ -1,0 +1,10 @@
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Java
+backend/portfolio-backend/target/
+*.class
+
+# OS
+.DS_Store
