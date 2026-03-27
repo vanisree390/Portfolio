@@ -12,8 +12,15 @@ function Home() {
     const [editingName, setEditingName] = useState("");
     const [editingDescription, setEditingDescription] = useState("");
 
-    // Use your live Render backend URL here
+    // Live backend URL (replace with your own)
     const BASE_URL = "https://portfolio-backend-dbse.onrender.com/api/projects";
+
+    // Fallback static data for instant rendering
+    const staticProjects = [
+        { id: 1, name: "Ecommerce", description: "using MERN stack" },
+        { id: 2, name: "Complaint Management System", description: "using MERN + ML, deployed on GitHub" },
+        { id: 3, name: "Portfolio", description: "using Java full stack" },
+    ];
 
     const fetchProjects = async () => {
         setLoading(true);
@@ -22,11 +29,11 @@ function Home() {
             const res = await fetch(BASE_URL);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
-            setProjects(Array.isArray(data) ? data : []);
+            setProjects(Array.isArray(data) ? data : data.projects || []);
         } catch (err) {
             console.error("Failed to fetch projects:", err);
             setError(err.message);
-            setProjects([]);
+            setProjects(staticProjects); // fallback to static data
         } finally {
             setLoading(false);
         }
@@ -36,6 +43,7 @@ function Home() {
         fetchProjects();
     }, []);
 
+    // Add new project
     const addProject = async () => {
         if (!name || !description) return;
         try {
@@ -54,12 +62,11 @@ function Home() {
         }
     };
 
+    // Delete project
     const deleteProject = async (id) => {
         if (!window.confirm("Are you sure you want to delete this project?")) return;
         try {
-            const res = await fetch(`${BASE_URL}/${id}`, {
-                method: "DELETE",
-            });
+            const res = await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });
             if (!res.ok) throw new Error("Failed to delete project");
             fetchProjects();
         } catch (err) {
@@ -68,6 +75,7 @@ function Home() {
         }
     };
 
+    // Start editing
     const startEditing = (project) => {
         setEditingId(project.id);
         setEditingName(project.name);
@@ -101,7 +109,7 @@ function Home() {
         <div style={styles.container}>
             <h1 style={styles.header}>My Projects</h1>
 
-            {/* Add new project */}
+            {/* Add Project */}
             <div style={styles.addContainer}>
                 <input
                     type="text"
@@ -117,12 +125,12 @@ function Home() {
                     onChange={(e) => setDescription(e.target.value)}
                     style={styles.input}
                 />
-                <button onClick={addProject} style={styles.addButton}>
+                <button onClick={addProject} style={styles.addButton} disabled={!name || !description}>
                     Add Project
                 </button>
             </div>
 
-            {/* Project list */}
+            {/* Project List */}
             {loading ? (
                 <p style={styles.infoText}>Loading projects...</p>
             ) : error ? (
@@ -177,111 +185,22 @@ function Home() {
 }
 
 const styles = {
-    container: {
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: 20,
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    header: {
-        textAlign: "center",
-        color: "#333",
-        marginBottom: 30,
-    },
-    addContainer: {
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 10,
-        marginBottom: 30,
-        justifyContent: "center",
-    },
-    input: {
-        flex: "1 1 200px",
-        padding: 10,
-        borderRadius: 5,
-        border: "1px solid #ccc",
-        fontSize: 16,
-    },
-    addButton: {
-        padding: "10px 20px",
-        border: "none",
-        borderRadius: 5,
-        backgroundColor: "#4CAF50",
-        color: "white",
-        fontWeight: "bold",
-        cursor: "pointer",
-    },
-    infoText: {
-        textAlign: "center",
-        fontSize: 18,
-        color: "#555",
-    },
-    projectsContainer: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-        gap: 20,
-    },
-    projectCard: {
-        backgroundColor: "#f9f9f9",
-        padding: 20,
-        borderRadius: 10,
-        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-        position: "relative",
-    },
-    projectTitle: {
-        margin: 0,
-        color: "#333",
-    },
-    projectDesc: {
-        color: "#666",
-        marginTop: 5,
-    },
-    buttonGroup: {
-        marginTop: 10,
-        display: "flex",
-        gap: 10,
-    },
-    editButton: {
-        padding: "5px 10px",
-        border: "none",
-        borderRadius: 5,
-        backgroundColor: "#2196F3",
-        color: "white",
-        cursor: "pointer",
-    },
-    deleteButton: {
-        padding: "5px 10px",
-        border: "none",
-        borderRadius: 5,
-        backgroundColor: "#f44336",
-        color: "white",
-        cursor: "pointer",
-    },
-    editInput: {
-        width: "100%",
-        padding: 8,
-        marginBottom: 5,
-        borderRadius: 5,
-        border: "1px solid #ccc",
-        fontSize: 15,
-    },
-    saveButton: {
-        padding: "5px 10px",
-        marginRight: 5,
-        border: "none",
-        borderRadius: 5,
-        backgroundColor: "#4CAF50",
-        color: "white",
-        cursor: "pointer",
-    },
-    cancelButton: {
-        padding: "5px 10px",
-        border: "none",
-        borderRadius: 5,
-        backgroundColor: "#999",
-        color: "white",
-        cursor: "pointer",
-    },
+    container: { maxWidth: 800, margin: "0 auto", padding: 20, fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" },
+    header: { textAlign: "center", color: "#333", marginBottom: 30 },
+    addContainer: { display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 30, justifyContent: "center" },
+    input: { flex: "1 1 200px", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 },
+    addButton: { padding: "10px 20px", border: "none", borderRadius: 5, backgroundColor: "#4CAF50", color: "white", fontWeight: "bold", cursor: "pointer" },
+    infoText: { textAlign: "center", fontSize: 18, color: "#555" },
+    projectsContainer: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 },
+    projectCard: { backgroundColor: "#f9f9f9", padding: 20, borderRadius: 10, boxShadow: "0 4px 6px rgba(0,0,0,0.1)", position: "relative" },
+    projectTitle: { margin: 0, color: "#333" },
+    projectDesc: { color: "#666", marginTop: 5 },
+    buttonGroup: { marginTop: 10, display: "flex", gap: 10 },
+    editButton: { padding: "5px 10px", border: "none", borderRadius: 5, backgroundColor: "#2196F3", color: "white", cursor: "pointer" },
+    deleteButton: { padding: "5px 10px", border: "none", borderRadius: 5, backgroundColor: "#f44336", color: "white", cursor: "pointer" },
+    editInput: { width: "100%", padding: 8, marginBottom: 5, borderRadius: 5, border: "1px solid #ccc", fontSize: 15 },
+    saveButton: { padding: "5px 10px", marginRight: 5, border: "none", borderRadius: 5, backgroundColor: "#4CAF50", color: "white", cursor: "pointer" },
+    cancelButton: { padding: "5px 10px", border: "none", borderRadius: 5, backgroundColor: "#999", color: "white", cursor: "pointer" },
 };
 
 export default Home;
