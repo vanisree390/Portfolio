@@ -12,11 +12,14 @@ function Home() {
     const [editingName, setEditingName] = useState("");
     const [editingDescription, setEditingDescription] = useState("");
 
+    // Use your live Render backend URL here
+    const BASE_URL = "https://portfolio-backend-dbse.onrender.com/api/projects";
+
     const fetchProjects = async () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch("http://localhost:8080/api/projects");
+            const res = await fetch(BASE_URL);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             setProjects(Array.isArray(data) ? data : []);
@@ -30,27 +33,13 @@ function Home() {
     };
 
     useEffect(() => {
-        const fetchProjects = async () => {
-            try {
-                const res = await fetch("http://localhost:8080/api/projects");
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                const data = await res.json();
-                setProjects(Array.isArray(data) ? data : []);
-            } catch (err) {
-                console.error("Failed to fetch projects:", err);
-                setError(err.message);
-                setProjects([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchProjects();
     }, []);
+
     const addProject = async () => {
         if (!name || !description) return;
         try {
-            const res = await fetch("http://localhost:8080/api/projects", {
+            const res = await fetch(BASE_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, description }),
@@ -68,7 +57,7 @@ function Home() {
     const deleteProject = async (id) => {
         if (!window.confirm("Are you sure you want to delete this project?")) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/projects/${id}`, {
+            const res = await fetch(`${BASE_URL}/${id}`, {
                 method: "DELETE",
             });
             if (!res.ok) throw new Error("Failed to delete project");
@@ -94,7 +83,7 @@ function Home() {
     const saveEdit = async (id) => {
         if (!editingName || !editingDescription) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/projects/${id}`, {
+            const res = await fetch(`${BASE_URL}/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: editingName, description: editingDescription }),
